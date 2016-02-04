@@ -1,17 +1,62 @@
-#!/usr/bin/python
+#!/bin/bash
 
-import setup
-setup.pre_install()
+set -e
 
-from charmhelpers.core import hookenv
+# Install requirements
+juju-log "Fetching and installing requirements"
+status-set maintenance "Fetching and installing requirements"
+apt-get install -y build-essential git ruby2.0 ruby2.0-dev libsqlite3-dev nginx libssl-dev
+gem2.0 install bundler
+juju-log "Finished fetching and installing requirements"
+
+# Install GenieACS-GUI
+status-set maintenance "Fetching and installing GenieACS-GUI"
+juju-log "Fetching and installing GenieACS-GUI"
+repo=`config-get repo`
+branch=`config-get branch`
+mkdir -p /var/www/
+mkdir -p /var/log/genieacs
+rm -rf /var/www/genieacs-gui
+git clone "$repo" /var/www/genieacs-gui -b "$branch"
+cd /var/www/genieacs-gui/config
+cp graphs-sample.json.erb graphs.json.erb
+cp index_parameters-sample.yml index_parameters.yml
+cp parameter_renderers-sample.yml parameter_renderers.yml
+cp parameters_edit-sample.yml parameters_edit.yml
+cp roles-sample.yml roles.yml
+cp summary_parameters-sample.yml summary_parameters.yml
+cp users-sample.yml users.yml
+
+cd /var/www/genieacs-gui
+echo "gem 'puma'" >> Gemfile
+
+bundle
+
+# Precompile assets
+rake assets:precompile RAILS_ENV=production
+
+# Configure Puma
+cd /etc/init.d
+wget https://raw.githubusercontent.com/puma/puma/master/tools/jungle/init.d/puma
+chmod +x /etc/init.d/puma
+cp "$CHARM_DIR/files/puma.conf" /etc/puma.conf
+cp "$CHARM_DIR/files/puma.rb" /var/www/genieacs-gui/config/puma.rb
+cd /usr/local/bin
+wget https://raw.githubusercontent.com/puma/puma/master/tools/jungle/init.d/run-puma
+chmod +x /usr/local/bin/run-puma
+mkdir -p /var/www/genieacs-gui/tmp/puma
+service puma restart
+
+# Configure nginx
+cd /etc/nginx/sites-enabled/
+unlink default || true
+rm -f /etc/nginx/sites-available/default
+cp "$CHARM_DIR/files/nginx-config" /etc/nginx/sites-available/genieacs-gui
+ln -s /etc/nginx/sites-available/genieacs-gui genieacs-gui || true
 
 
-def install():
-    hookenv.log('Installing gg')
-    # add steps for installing dependencies and packages here
-    # e.g.: from charmhelpers import fetch
-    #       fetch.apt_install(fetch.filter_installed_packages(['nginx']))
+cd "$CHARM_DIR"
 
+juju-log "Finished fetching and installing GenieACS GUI"
 
-if __name__ == "__main__":
-    install()
+status-set waiting "GenieACS GUI is waiting for GenieACS backend"

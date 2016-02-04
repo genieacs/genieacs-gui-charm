@@ -1,19 +1,13 @@
-name: gg
-summary: <Fill in summary here>
-maintainer: juju <juju@ubuntu-512mb-fra1-01>
+name: genieacs-gui
+summary: GenieACS GUI
+maintainer: shweelan <shweelan@genieacs.com>
 description: |
-  <Multi-line description here>
+  Front end GUI for GenieACS built with Ruby On Rails.
 tags:
-  # Replace "misc" with one or more whitelisted tags from this list:
-  # https://jujucharms.com/docs/stable/authors-charm-metadata
-  - misc
-subordinate: false
+  - monitoring
 provides:
-  provides-relation:
-    interface: interface-name
+  website:
+    interface: http
 requires:
-  requires-relation:
-    interface: interface-name
-peers:
-  peer-relation:
-    interface: interface-name
+  api:
+    interface: genieacs

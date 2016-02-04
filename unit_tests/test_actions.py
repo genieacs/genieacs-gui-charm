@@ -14,7 +14,7 @@ class TestActions(unittest.TestCase):
     @mock.patch('charmhelpers.core.hookenv.log')
     def test_log_start(self, log):
         actions.log_start('test-service')
-        log.assert_called_once_with('gg starting')
+        log.assert_called_once_with('genieacs-gui starting')
 
 
 if __name__ == '__main__':

@@ -1,3 +1,16 @@
-#!/usr/bin/python
-import services
-services.manage()
+#!/bin/bash
+
+set -e
+
+if [ -n "$GENIEACS_BACKEND_HOST" ]; then
+    sed -i '/genieacs_api_host/c\  config.genieacs_api_host = "'$GENIEACS_BACKEND_HOST'"' /var/www/genieacs-gui/config/environments/production.rb
+    sed -i '/genieacs_api_port/c\  config.genieacs_api_port = "'$GENIEACS_NBI_PORT'"' /var/www/genieacs-gui/config/environments/production.rb
+fi
+
+juju-log "Running GenieACS GUI"
+service nginx restart || service nginx start
+service puma restart || service puma start
+
+open-port 80
+status-set active
+

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+
+host=`relation-get private-address`
+nbi_port=`relation-get nbi_port`
+
+if [ -z "$host" ] ; then
+    exit 0
+fi
+
+if [ -z "$nbi_port" ]; then
+    nbi_port=`config-get nbi_port`
+fi
+
+export GENIEACS_BACKEND_HOST=$host
+export GENIEACS_NBI_PORT=$nbi_port
+
+"$CHARM_DIR/hooks/start"

@@ -1,14 +1,17 @@
 options:
-  string-option:
+  repo:
     type: string
-    default: "Default Value"
-    description: "A short description of the configuration option"
-  boolean-option:
-    type: boolean
-    default: False
-    description: "A short description of the configuration option"
-  int-option:
-    type: int
-    default: 9001
-    description: "A short description of the configuration option"
-
+    default: https://github.com/zaidka/genieacs-gui.git
+    description: GenieACS GUI source code repository
+  branch:
+    type: string
+    default: master
+    description: GenieACS GUI repository deployment branch.
+  genieacs_host:
+    type: string
+    default: ""
+    description: GenieACS backend host.
+  nbi_port:
+    type: string
+    default: "7557"
+    description: GenieACS backend api port.
