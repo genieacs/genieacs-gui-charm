@@ -1,0 +1,56 @@
+#!/bin/bash
+
+set -e
+
+host=`config-get genieacs_host`
+nbi_port=`config-get nbi_port`
+
+if [ -n $host ]; then
+    export GENIEACS_BACKEND_HOST="$host"
+    export GENIEACS_NBI_PORT=$nbi_port
+fi
+
+# Check if repo or branch changed
+install () {
+    cd /var/www/genieacs-gui/config
+    cp graphs-sample.json.erb graphs.json.erb
+    cp index_parameters-sample.yml index_parameters.yml
+    cp parameter_renderers-sample.yml parameter_renderers.yml
+    cp parameters_edit-sample.yml parameters_edit.yml
+    cp roles-sample.yml roles.yml
+    cp summary_parameters-sample.yml summary_parameters.yml
+    cp users-sample.yml users.yml
+    sed -i '/genieacs_api_host/c\'"$1" environments/production.rb
+    sed -i '/genieacs_api_port/c\'"$2" environments/production.rb
+    cd /var/www/genieacs-gui
+    echo "gem 'puma'" >> Gemfile
+    bundle
+    rake assets:precompile RAILS_ENV=production || true
+    mkdir -p /var/www/genieacs-gui/tmp/puma
+}
+
+cd /var/www/genieacs-gui/
+repo=`config-get repo`
+branch=`config-get branch`
+current_repo=`git config --get remote.origin.url`
+if [ "$current_repo" != "$repo" ]; then
+    "$CHARM_DIR/hooks/stop"
+    genieacs_api_host=`grep "genieacs_api_host" config/environments/production.rb` || true
+    genieacs_api_port=`grep "genieacs_api_port" config/environments/production.rb` || true
+    git remote set-url origin $repo
+    git fetch origin $branch
+    git reset --hard
+    install "$genieacs_api_host" "$genieacs_api_port"
+fi
+current_branch=`git rev-parse --abbrev-ref HEAD`
+if [ "$current_branch" != "$branch" ]; then
+    "$CHARM_DIR/hooks/stop"
+    genieacs_api_host=`grep "genieacs_api_host" config/environments/production.rb` || true
+    genieacs_api_port=`grep "genieacs_api_port" config/environments/production.rb` || true
+    git checkout bin/*
+    git checkout $branch
+    install "$genieacs_api_host" "$genieacs_api_port"
+fi
+
+cd $CHARM_DIR
+"$CHARM_DIR/hooks/start"

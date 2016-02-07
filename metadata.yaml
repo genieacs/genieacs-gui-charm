@@ -1,0 +1,13 @@
+name: genieacs-gui
+summary: GenieACS GUI
+maintainer: shweelan <shweelan@genieacs.com>
+description: |
+  Front end GUI for GenieACS built with Ruby On Rails.
+tags:
+  - monitoring
+provides:
+  website:
+    interface: http
+requires:
+  api:
+    interface: genieacs

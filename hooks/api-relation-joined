@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -e
+
+"$CHARM_DIR/hooks/api-relation-changed"
