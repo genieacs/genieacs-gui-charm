@@ -1,1 +1,18 @@
-GENIEACS-GUI!
+GenieACS-GUI Juju Charm
+
+To deploy genieacs-gui juju
+    $ juju deply cs:~zaidka/trusty/genieacs-gui-0
+
+To configure genieacs-gui to remote genieacs host and nbi port
+    $ juju set genieacs-gui genieacs-host='<genieacs-host>' nbi-port='<genieacs-nbi-port>'
+
+Or to configure genieacs-gui api host and port on juju environment
+    $ juju deply cs:~zaidka/trusty/genieacs-0
+    $ juju deploy redis
+    $ juju deploy mongodb
+    $ juju add-relation mongodb genieacs
+    $ juju add-relation redis:master genieacs
+    $ juju add-relation genieacs genieacs-gui
+
+To expose genieacs-gui(port: 80) publicly
+    $ juju expose genieacs-gui
